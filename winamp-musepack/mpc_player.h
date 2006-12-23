@@ -10,17 +10,19 @@ class mpc_player
 {
 public:
 	mpc_player(In_Module * in_mod);
+	mpc_player(char * fn, In_Module * in_mod);
 	~mpc_player(void);
 
 	int play(char *fn);
 	void stop(void);
-	void getFileInfo(char *filename, char *title, int *length_in_ms);
+
+	void getFileInfo(char *title, int *length_in_ms);
 	int getLength(void) {return si.samples * 1000 / si.sample_freq;}
 	int getOutputTime(void) {return decode_pos_sample * 1000 / si.sample_freq;}
 
+	void setOutputTime(int time_in_ms);
+
 	int paused;				// are we paused?
-	volatile int seek_offset; // if != -1, it is the point that the decode 
-							  // thread should seek to, in ms.
 
 private:
 	char lastfn[MAX_PATH];	// currently playing file (used for getting info on the current file)
@@ -30,9 +32,12 @@ private:
     MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	__int64 decode_pos_sample; // decoding position in samples;
+	volatile int seek_offset; // if != -1, it is the point that the decode 
+							  // thread should seek to, in ms.
 	volatile int killDecodeThread;	// the kill switch for the decode thread
 
 	HANDLE thread_handle;	// the handle to the decode thread
+	HANDLE wait_event;
 
 	In_Module * mod;
 
@@ -40,6 +45,8 @@ private:
 	int decodeFile(void);
 	int openFile(char * fn);
 	void closeFile(void);
+
+	void init(In_Module * in_mod);
 
 	void scaleSamples(short * buffer, int len);
 };

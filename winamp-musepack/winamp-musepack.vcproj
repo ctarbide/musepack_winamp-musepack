@@ -175,6 +175,10 @@
 				RelativePath=".\mpc_player.h"
 				>
 			</File>
+			<File
+				RelativePath=".\out.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

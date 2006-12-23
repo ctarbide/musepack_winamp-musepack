@@ -8,11 +8,13 @@
 
 mpc_player::mpc_player(In_Module * in_mod)
 {
-	thread_handle=INVALID_HANDLE_VALUE;
-	killDecodeThread=0;
+	init(in_mod);
+}
 
-	demux = 0;
-	mod = in_mod;
+mpc_player::mpc_player(char * fn, In_Module * in_mod)
+{
+	init(in_mod);
+	openFile(fn);
 }
 
 mpc_player::~mpc_player(void)
@@ -20,11 +22,21 @@ mpc_player::~mpc_player(void)
 	closeFile();
 }
 
+void mpc_player::init(In_Module * in_mod)
+{
+	thread_handle=INVALID_HANDLE_VALUE;
+	killDecodeThread=0;
+
+	demux = 0;
+	mod = in_mod;
+	wait_event = 0;
+}
+
 int mpc_player::openFile(char * fn)
 {
-	mpc_status err;
+	closeFile();
 
-    err = mpc_reader_init_stdio(&reader, fn);
+    mpc_status err = mpc_reader_init_stdio(&reader, fn);
     if(err < 0) return 1;
 
     demux = mpc_demux_init(&reader);
@@ -34,6 +46,7 @@ int mpc_player::openFile(char * fn)
 	}
 
     mpc_demux_get_info(demux,  &si);
+	strcpy(lastfn, fn);
 	return 0;
 }
 
@@ -44,6 +57,12 @@ void mpc_player::closeFile(void)
 		demux = 0;
 		mpc_reader_exit_stdio(&reader);
 	}
+}
+
+void mpc_player::setOutputTime(int time_in_ms)
+{
+	seek_offset = time_in_ms;
+	if (wait_event) SetEvent(wait_event);
 }
 
 void mpc_player::scaleSamples(short * buffer, int len)
@@ -73,6 +92,8 @@ int mpc_player::decodeFile(void)
 {
 	int done = 0;
 
+	wait_event = CreateEvent(0, FALSE, FALSE, 0);
+
 	while (!killDecodeThread) 
 	{
 		if (seek_offset != -1) {
@@ -91,7 +112,7 @@ int mpc_player::decodeFile(void)
 				PostMessage(mod->hMainWindow,WM_WA_EOF, 0, 0);
 				break;
 			}
-			Sleep(10);		// give a little CPU time back to the system.
+			WaitForSingleObject(wait_event, 100);		// give a little CPU time back to the system.
 		} else if (mod->outMod->CanWrite() >= (MPC_FRAME_LENGTH * sizeof(short) * si.channels)*(mod->dsp_isactive()?2:1)) {
 			// CanWrite() returns the number of bytes you can write, so we check that
 			// to the block size. the reason we multiply the block size by two if 
@@ -104,7 +125,7 @@ int mpc_player::decodeFile(void)
 			mpc_demux_decode(demux, &frame);
 
 			if(frame.bits == -1) {
-				done=1;
+				done = 1;
 			} else {
 				short output_buffer[MPC_FRAME_LENGTH * 2]; // default 2 channels
 				int decode_pos_ms = getOutputTime();
@@ -123,48 +144,35 @@ int mpc_player::decodeFile(void)
 				// write the pcm data to the output system
 				mod->outMod->Write((char*)output_buffer, frame.samples * sizeof(short) * si.channels);
 			}
-		} else Sleep(20);
+		} else WaitForSingleObject(wait_event, 1000);
 	}
+
+	CloseHandle(wait_event);
+	wait_event = 0;
+
 	return 0;
 }
 
-void mpc_player::getFileInfo(char *filename, char *title, int *length_in_ms)
+void mpc_player::getFileInfo(char *title, int *length_in_ms)
 {
-	if (!filename || !*filename) {
-		if (length_in_ms) *length_in_ms = getLength();
-		if (title) {
-			char *p = lastfn + strlen(lastfn);
-			while (*p != '\\' && p >= lastfn) p--;
-			strcpy(title,++p);
-		}
-	} else {
-		if (length_in_ms) {
-			if (openFile(filename) == 0) {
-				closeFile();
-				*length_in_ms = getLength();
-			} else {
-				*length_in_ms = -1000; // the default is unknown file length (-1000).
-			}
-		}
-		if (title) {
-			char *p = filename + strlen(filename);
-			while (*p != '\\' && p >= filename) p--;
-			strcpy(title,++p);
-		}
+	if (length_in_ms) *length_in_ms = getLength();
+	if (title) {
+		char *p = lastfn + strlen(lastfn);
+		while (*p != '\\' && p >= lastfn) p--;
+		strcpy(title,++p);
 	}
 }
 
 // stop playing.
 void mpc_player::stop(void)
 { 
-	if (thread_handle != INVALID_HANDLE_VALUE)
-	{
-		killDecodeThread=1;
-		if (WaitForSingleObject(thread_handle,10000) == WAIT_TIMEOUT)
-		{
+	if (thread_handle != INVALID_HANDLE_VALUE) {
+		killDecodeThread = 1;
+		if (wait_event) SetEvent(wait_event);
+		if (WaitForSingleObject(thread_handle,10000) == WAIT_TIMEOUT) {
 			MessageBox(mod->hMainWindow,"error asking thread to die!\n",
-				"error killing decode thread",0);
-			TerminateThread(thread_handle,0);
+				"error killing decode thread", 0);
+			TerminateThread(thread_handle, 0);
 		}
 		CloseHandle(thread_handle);
 		thread_handle = INVALID_HANDLE_VALUE;
@@ -188,8 +196,6 @@ int mpc_player::play(char *fn)
 	seek_offset=-1;
 
 	if (openFile(fn) != 0) return 1;
-	
-	strcpy(lastfn,fn);
 
 	// -1 and -1 are to specify buffer and prebuffer lengths.
 	// -1 means to use the default, which all input plug-ins should

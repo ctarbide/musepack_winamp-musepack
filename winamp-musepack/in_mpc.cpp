@@ -157,8 +157,9 @@ int getoutputtime(void)
 // usually we use it to set seek_needed to the seek
 // point (seek_needed is -1 when no seek is needed)
 // and the decode thread checks seek_needed.
-void setoutputtime(int time_in_ms) { 
-	player->seek_offset = time_in_ms;
+void setoutputtime(int time_in_ms)
+{
+	player->setOutputTime(time_in_ms);
 }
 
 // this gets called when the use hits Alt+3 to get the file info.
@@ -180,7 +181,12 @@ int infoDlg(char *fn, HWND hwnd)
 // if length_in_ms is NULL, no length is copied into it.
 void getfileinfo(char *filename, char *title, int *length_in_ms)
 {
-	player->getFileInfo(filename, title, length_in_ms);
+	if (!filename || !*filename)
+		player->getFileInfo(title, length_in_ms);
+	else {
+		mpc_player info_play(filename, &mod);
+		info_play.getFileInfo(title, length_in_ms);
+	}
 }
 
 void eq_set(int on, char data[10], int preamp) 
