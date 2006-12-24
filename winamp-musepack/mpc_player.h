@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mpcdec/mpcdec.h>
+#include <fileref.h>
 
 // post this to the main window at end of file (after playback as stopped)
 #define WM_WA_EOF WM_USER+2
@@ -29,6 +30,8 @@ private:
 	mpc_streaminfo si;
 	mpc_reader reader;
 	mpc_demux* demux;
+	TagLib::FileRef * tag_file;
+
     MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
 	__int64 decode_pos_sample; // decoding position in samples;

@@ -5,6 +5,7 @@
 #include "mpc_player.h"
 #include <mpc/minimax.h>
 
+#include <tag.h>
 
 mpc_player::mpc_player(In_Module * in_mod)
 {
@@ -30,6 +31,7 @@ void mpc_player::init(In_Module * in_mod)
 	demux = 0;
 	mod = in_mod;
 	wait_event = 0;
+	tag_file = 0;
 }
 
 int mpc_player::openFile(char * fn)
@@ -56,6 +58,10 @@ void mpc_player::closeFile(void)
 		mpc_demux_exit(demux);
 		demux = 0;
 		mpc_reader_exit_stdio(&reader);
+	}
+	if (tag_file != 0) {
+		delete tag_file;
+		tag_file = 0;
 	}
 }
 
@@ -157,9 +163,23 @@ void mpc_player::getFileInfo(char *title, int *length_in_ms)
 {
 	if (length_in_ms) *length_in_ms = getLength();
 	if (title) {
-		char *p = lastfn + strlen(lastfn);
-		while (*p != '\\' && p >= lastfn) p--;
-		strcpy(title,++p);
+		if(tag_file == 0)
+			tag_file = new TagLib::FileRef(lastfn, false);
+
+		if (tag_file->isNull() || !tag_file->tag()) {
+			char *p = lastfn + strlen(lastfn);
+			while (*p != '\\' && p >= lastfn) p--;
+			strcpy(title,++p);
+		} else {
+			TagLib::Tag *tag = tag_file->tag();
+			sprintf(title, "%s - %s", tag->artist().toCString(), tag->title().toCString());
+			//tag->artist()
+			//tag->album()
+			//tag->year()
+			//tag->comment()
+			//tag->track()
+			//tag->genre()
+		}
 	}
 }
 

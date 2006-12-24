@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libmpc\include"
+				AdditionalIncludeDirectories="..\..\libmpc\include;C:\Program Files\taglib\include\taglib"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				DebugInformationFormat="1"
 			/>
@@ -52,11 +52,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="User32.lib libmpcdec_d.lib libcommon_d.lib"
+				AdditionalDependencies="User32.lib libmpcdec_d.lib libcommon_d.lib tag.lib"
 				OutputFile="E:\Program Files\Winamp\Plugins\in_mpc.dll"
-				AdditionalLibraryDirectories="..\..\libmpc\win32\Debug"
+				AdditionalLibraryDirectories="..\..\libmpc\win32\Debug;C:\Program Files\taglib\lib"
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="LIBCMTD"
+				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
