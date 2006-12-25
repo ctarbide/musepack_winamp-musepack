@@ -26,8 +26,8 @@
 #include "mpc_info.h"
 
 #include <tag.h>
+#include <vcclr.h>
 
-using namespace winamp_musepack;
 
 mpc_player::mpc_player(In_Module * in_mod)
 {
@@ -270,9 +270,60 @@ int mpc_player::play(char *fn)
 	return 0; 
 }
 
+void mpc_player::loadTags(mpc_info ^ infoBox)
+{
+	if(tag_file == 0)
+		tag_file = new TagLib::FileRef(lastfn, false);
+
+	if (!tag_file->isNull() && tag_file->tag()) {
+		TagLib::Tag *tag = tag_file->tag();
+		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true));
+		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true));
+		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true));
+		infoBox->txtYear->Text = "";
+		infoBox->txtYear->Text += tag->year();
+		infoBox->txtTrack->Text = "";
+		infoBox->txtTrack->Text += tag->track();
+		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true));
+		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true));
+	}
+}
+
+void mpc_player::writeTags(mpc_info ^ infoBox)
+{
+	if (!tag_file->isNull() && tag_file->tag()) {
+		TagLib::Tag *tag = tag_file->tag();
+
+		pin_ptr<const wchar_t> wch = PtrToStringChars(infoBox->txtTitle->Text);
+		tag->setTitle(wch);
+
+		wch = PtrToStringChars(infoBox->txtArtist->Text);
+		tag->setArtist(wch);
+
+		wch = PtrToStringChars(infoBox->txtAlbum->Text);
+		tag->setAlbum(wch);
+
+		wch = PtrToStringChars(infoBox->txtYear->Text);
+		TagLib::String year(wch);
+		tag->setYear(year.toInt());
+
+		wch = PtrToStringChars(infoBox->txtTrack->Text);
+		TagLib::String track(wch);
+		tag->setTrack(track.toInt());
+
+		wch = PtrToStringChars(infoBox->comboGenre->Text);
+		tag->setGenre(wch);
+
+		wch = PtrToStringChars(infoBox->txtComment->Text);
+		tag->setComment(wch);
+
+		tag_file->save(); // FIXME : make all crash
+	}
+}
+
 int mpc_player::infoDlg(HWND hwnd)
 {
-	mpc_info infoBox;
+	mpc_info infoBox(this);
 	System::String ^ tmp;
 
 	tmp = "Streamversion ";
@@ -298,20 +349,7 @@ int mpc_player::infoDlg(HWND hwnd)
 
 	infoBox.lblStreamInfo->Text = tmp;
 
-
-	if(tag_file == 0)
-		tag_file = new TagLib::FileRef(lastfn, false);
-
-	if (!tag_file->isNull() && tag_file->tag()) {
-		TagLib::Tag *tag = tag_file->tag();
-		infoBox.txtTitle->Text = gcnew String(tag->title().toCString(true));
-		infoBox.txtArtist->Text = gcnew String(tag->artist().toCString(true));
-		infoBox.txtAlbum->Text = gcnew String(tag->album().toCString(true));
-		infoBox.txtYear->Text += tag->year();
-		infoBox.txtTrack->Text += tag->track();
-		infoBox.comboGenre->Text = gcnew String(tag->genre().toCString(true));
-		infoBox.txtComment->Text = gcnew String(tag->comment().toCString(true));
-	}
+	loadTags(% infoBox);
 
 	infoBox.ShowDialog();
 	return 0;

@@ -92,11 +92,11 @@ In_Module mod =
 
 void config(HWND hwndParent)
 {
-	MessageBox(hwndParent, "No configuration yet", "Configuration", MB_OK);
+	MessageBoxA(hwndParent, "No configuration yet", "Configuration", MB_OK);
 }
 void about(HWND hwndParent)
 {
-	MessageBox(hwndParent,"Musepack plugin for winamp\nAll bugs © Nicolas BOTTI", "Uh ?", MB_OK);
+	MessageBoxA(hwndParent,"Musepack plugin for winamp\nAll bugs © Nicolas BOTTI", "Uh ?", MB_OK);
 }
 
 void init(void)

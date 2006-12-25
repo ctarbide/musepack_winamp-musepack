@@ -21,6 +21,9 @@
 
 #include <mpcdec/mpcdec.h>
 #include <fileref.h>
+#include "mpc_info.h"
+
+using namespace winamp_musepack;
 
 // post this to the main window at end of file (after playback as stopped)
 #define WM_WA_EOF WM_USER+2
@@ -43,6 +46,8 @@ public:
 	void setOutputTime(int time_in_ms);
 
 	int infoDlg(HWND hwnd);
+	void loadTags(mpc_info ^ infoBox);
+	void writeTags(mpc_info ^ infoBox);
 
 	int paused;				// are we paused?
 

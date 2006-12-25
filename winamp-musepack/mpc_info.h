@@ -1,3 +1,22 @@
+/*
+	Copyright (C) 2006 Nicolas BOTTI <rududu at laposte.net>
+	This file is part of the Musepack Winamp plugin.
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; either
+	version 2.1 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public
+	License along with this library; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
 #pragma once
 
 using namespace System;
@@ -7,6 +26,7 @@ using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
 
+class mpc_player;
 
 namespace winamp_musepack {
 
@@ -22,12 +42,10 @@ namespace winamp_musepack {
 	public ref class mpc_info : public System::Windows::Forms::Form
 	{
 	public:
-		mpc_info(void)
+		mpc_info(mpc_player * init_player)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
+			player = init_player;
 		}
 
 	protected:
@@ -41,54 +59,35 @@ namespace winamp_musepack {
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::GroupBox^  groupBox1;
-	public: System::Windows::Forms::TextBox^  txtTrack;
-	private: 
-
-	protected: 
-
-	private: System::Windows::Forms::Label^  label5;
-	public: System::Windows::Forms::TextBox^  txtYear;
-	private: 
-
-
-	private: System::Windows::Forms::Label^  label4;
-	public: System::Windows::Forms::TextBox^  txtAlbum;
-	private: 
+	private:
+	System::Windows::Forms::GroupBox^  groupBox1;
+	System::Windows::Forms::Label^  label5;
+	System::Windows::Forms::Label^  label4;
+	System::Windows::Forms::Label^  label3;
+	System::Windows::Forms::Label^  label2;
+	System::Windows::Forms::Label^  label1;
+	System::Windows::Forms::GroupBox^  groupBox2;
+	System::Windows::Forms::Label^  label6;
+	System::Windows::Forms::Label^  label7;
 
 
-	private: System::Windows::Forms::Label^  label3;
-	public: System::Windows::Forms::TextBox^  txtArtist;
-	private: 
 
 
-	private: System::Windows::Forms::Label^  label2;
-	public: System::Windows::Forms::TextBox^  txtTitle;
-	private: 
-
-
-	private: System::Windows::Forms::Label^  label1;
-	private: System::Windows::Forms::GroupBox^  groupBox2;
-	public: System::Windows::Forms::TextBox^  txtComment;
-	private: 
-
-
-	private: System::Windows::Forms::Label^  label6;
-	private: System::Windows::Forms::Label^  label7;
-	public: System::Windows::Forms::ComboBox^  comboGenre;
-	private: 
-	public: System::Windows::Forms::Label^  lblStreamInfo;
-	private: System::Windows::Forms::Button^  btnReload;
-	public: 
-
-	private: System::Windows::Forms::Button^  btnCancel;
-	public: 
-
+	mpc_player * player;
+			 
+	public:
+	System::Windows::Forms::TextBox^  txtTrack;
+	System::Windows::Forms::TextBox^  txtYear;
+	System::Windows::Forms::TextBox^  txtAlbum;
+	System::Windows::Forms::TextBox^  txtArtist;
+	System::Windows::Forms::TextBox^  txtTitle;
+	System::Windows::Forms::TextBox^  txtComment;
+	System::Windows::Forms::ComboBox^  comboGenre;
+	System::Windows::Forms::Label^  lblStreamInfo;
 	private: System::Windows::Forms::Button^  btnUpdate;
-
-
-
-
+	public: 
+	private: System::Windows::Forms::Button^  btnCancel;
+	private: System::Windows::Forms::Button^  btnReload;
 
 	private:
 		/// <summary>
@@ -104,6 +103,9 @@ namespace winamp_musepack {
 		void InitializeComponent(void)
 		{
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
+			this->btnUpdate = (gcnew System::Windows::Forms::Button());
+			this->btnCancel = (gcnew System::Windows::Forms::Button());
+			this->btnReload = (gcnew System::Windows::Forms::Button());
 			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->comboGenre = (gcnew System::Windows::Forms::ComboBox());
 			this->txtComment = (gcnew System::Windows::Forms::TextBox());
@@ -120,15 +122,15 @@ namespace winamp_musepack {
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
 			this->lblStreamInfo = (gcnew System::Windows::Forms::Label());
-			this->btnReload = (gcnew System::Windows::Forms::Button());
-			this->btnCancel = (gcnew System::Windows::Forms::Button());
-			this->btnUpdate = (gcnew System::Windows::Forms::Button());
 			this->groupBox1->SuspendLayout();
 			this->groupBox2->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// groupBox1
 			// 
+			this->groupBox1->Controls->Add(this->btnUpdate);
+			this->groupBox1->Controls->Add(this->btnCancel);
+			this->groupBox1->Controls->Add(this->btnReload);
 			this->groupBox1->Controls->Add(this->label7);
 			this->groupBox1->Controls->Add(this->comboGenre);
 			this->groupBox1->Controls->Add(this->txtComment);
@@ -145,10 +147,40 @@ namespace winamp_musepack {
 			this->groupBox1->Controls->Add(this->label1);
 			this->groupBox1->Location = System::Drawing::Point(12, 12);
 			this->groupBox1->Name = L"groupBox1";
-			this->groupBox1->Size = System::Drawing::Size(354, 183);
+			this->groupBox1->Size = System::Drawing::Size(354, 212);
 			this->groupBox1->TabIndex = 0;
 			this->groupBox1->TabStop = false;
-			this->groupBox1->Text = L"Tag information";
+			this->groupBox1->Text = L"Tag";
+			// 
+			// btnUpdate
+			// 
+			this->btnUpdate->Location = System::Drawing::Point(6, 183);
+			this->btnUpdate->Name = L"btnUpdate";
+			this->btnUpdate->Size = System::Drawing::Size(84, 23);
+			this->btnUpdate->TabIndex = 16;
+			this->btnUpdate->Text = L"Update";
+			this->btnUpdate->UseVisualStyleBackColor = true;
+			this->btnUpdate->Click += gcnew System::EventHandler(this, &mpc_info::btnUpdate_Click);
+			// 
+			// btnCancel
+			// 
+			this->btnCancel->Location = System::Drawing::Point(135, 183);
+			this->btnCancel->Name = L"btnCancel";
+			this->btnCancel->Size = System::Drawing::Size(84, 23);
+			this->btnCancel->TabIndex = 15;
+			this->btnCancel->Text = L"Cancel";
+			this->btnCancel->UseVisualStyleBackColor = true;
+			this->btnCancel->Click += gcnew System::EventHandler(this, &mpc_info::btnCancel_Click);
+			// 
+			// btnReload
+			// 
+			this->btnReload->Location = System::Drawing::Point(264, 183);
+			this->btnReload->Name = L"btnReload";
+			this->btnReload->Size = System::Drawing::Size(84, 23);
+			this->btnReload->TabIndex = 14;
+			this->btnReload->Text = L"Reload";
+			this->btnReload->UseVisualStyleBackColor = true;
+			this->btnReload->Click += gcnew System::EventHandler(this, &mpc_info::btnReload_Click);
 			// 
 			// label7
 			// 
@@ -279,7 +311,7 @@ namespace winamp_musepack {
 			this->groupBox2->Size = System::Drawing::Size(149, 212);
 			this->groupBox2->TabIndex = 1;
 			this->groupBox2->TabStop = false;
-			this->groupBox2->Text = L"Stream information";
+			this->groupBox2->Text = L"Stream";
 			// 
 			// lblStreamInfo
 			// 
@@ -290,42 +322,11 @@ namespace winamp_musepack {
 			this->lblStreamInfo->TabIndex = 0;
 			this->lblStreamInfo->Text = L"lblStreamInfo";
 			// 
-			// btnReload
-			// 
-			this->btnReload->Location = System::Drawing::Point(282, 201);
-			this->btnReload->Name = L"btnReload";
-			this->btnReload->Size = System::Drawing::Size(84, 23);
-			this->btnReload->TabIndex = 2;
-			this->btnReload->Text = L"Reload";
-			this->btnReload->UseVisualStyleBackColor = true;
-			// 
-			// btnCancel
-			// 
-			this->btnCancel->Location = System::Drawing::Point(147, 201);
-			this->btnCancel->Name = L"btnCancel";
-			this->btnCancel->Size = System::Drawing::Size(84, 23);
-			this->btnCancel->TabIndex = 3;
-			this->btnCancel->Text = L"Cancel";
-			this->btnCancel->UseVisualStyleBackColor = true;
-			this->btnCancel->Click += gcnew System::EventHandler(this, &mpc_info::btnCancel_Click);
-			// 
-			// btnUpdate
-			// 
-			this->btnUpdate->Location = System::Drawing::Point(12, 201);
-			this->btnUpdate->Name = L"btnUpdate";
-			this->btnUpdate->Size = System::Drawing::Size(84, 23);
-			this->btnUpdate->TabIndex = 4;
-			this->btnUpdate->Text = L"Update";
-			this->btnUpdate->UseVisualStyleBackColor = true;
-			// 
 			// mpc_info
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(534, 237);
-			this->Controls->Add(this->btnUpdate);
-			this->Controls->Add(this->btnCancel);
-			this->Controls->Add(this->btnReload);
 			this->Controls->Add(this->groupBox2);
 			this->Controls->Add(this->groupBox1);
 			this->Name = L"mpc_info";
@@ -337,8 +338,10 @@ namespace winamp_musepack {
 
 		}
 #pragma endregion
-private: System::Void btnCancel_Click(System::Object^  sender, System::EventArgs^  e) {
-			 Close();
-		 }
+
+	private :
+	System::Void btnCancel_Click(System::Object^  sender, System::EventArgs^  e);
+	System::Void btnReload_Click(System::Object^  sender, System::EventArgs^  e);
+	System::Void btnUpdate_Click(System::Object^  sender, System::EventArgs^  e);
 };
 }
