@@ -184,8 +184,8 @@ void setoutputtime(int time_in_ms)
 
 int infoDlg(char *fn, HWND hwnd)
 {
-	// CHANGEME! Write your own info dialog code here
-	return 0;
+	mpc_player info_play(fn, &mod);
+	return info_play.infoDlg(hwnd);
 }
 
 

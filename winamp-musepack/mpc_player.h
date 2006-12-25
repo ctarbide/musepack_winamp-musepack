@@ -42,6 +42,8 @@ public:
 
 	void setOutputTime(int time_in_ms);
 
+	int infoDlg(HWND hwnd);
+
 	int paused;				// are we paused?
 
 private:

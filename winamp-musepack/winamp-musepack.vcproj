@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="winamp-musepack"
 	ProjectGUID="{EEA7D671-FB86-4E8D-8F1A-CC05174342F0}"
+	RootNamespace="winamp-musepack"
 	>
 	<Platforms>
 		<Platform
@@ -39,6 +40,8 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\libmpc\include;C:\Program Files\taglib\include\taglib"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
+				WarningLevel="3"
 				DebugInformationFormat="1"
 			/>
 			<Tool
@@ -55,8 +58,9 @@
 				AdditionalDependencies="User32.lib libmpcdec_d.lib libcommon_d.lib tag.lib"
 				OutputFile="E:\Program Files\Winamp\Plugins\in_mpc.dll"
 				AdditionalLibraryDirectories="..\..\libmpc\win32\Debug;C:\Program Files\taglib\lib"
+				GenerateManifest="false"
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT"
+				IgnoreDefaultLibraryNames="LIBCMTD;MSVCRT;MSVCMRT"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
@@ -86,8 +90,9 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -106,6 +111,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\libmpc\include;C:\Program Files\taglib\include\taglib"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
+				WarningLevel="1"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -118,6 +127,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="User32.lib libmpcdec.lib libcommon.lib tag.lib"
+				OutputFile="E:\Program Files\Winamp\Plugins\in_mpc.dll"
+				AdditionalLibraryDirectories="..\..\libmpc\win32\Release;C:\Program Files\taglib\lib"
+				GenerateManifest="true"
+				IgnoreDefaultLibraryNames="LIBCMT"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -146,6 +160,26 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<AssemblyReference
+			RelativePath="System.dll"
+			AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.Data.dll"
+			AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86"
+		/>
+		<AssemblyReference
+			RelativePath="System.Drawing.dll"
+			AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.Windows.Forms.dll"
+			AssemblyName="System.Windows.Forms, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
+		<AssemblyReference
+			RelativePath="System.XML.dll"
+			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -158,8 +192,56 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mpc_info.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						MinimalRebuild="false"
+						ExceptionHandling="2"
+						BasicRuntimeChecks="0"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						MinimalRebuild="false"
+						ExceptionHandling="2"
+						BasicRuntimeChecks="0"
+						UsePrecompiledHeader="0"
+						DebugInformationFormat="3"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\mpc_player.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ExceptionHandling="2"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ExceptionHandling="2"
+						CompileAsManaged="1"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -170,6 +252,16 @@
 			<File
 				RelativePath=".\in2.h"
 				>
+			</File>
+			<File
+				RelativePath=".\mpc_info.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\mpc_info.resx"
+					SubType="Designer"
+					>
+				</File>
 			</File>
 			<File
 				RelativePath=".\mpc_player.h"

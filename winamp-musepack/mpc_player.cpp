@@ -18,12 +18,16 @@
 */
 
 #include <windows.h>
+#include <math.h>
 
 #include "in2.h"
 #include "mpc_player.h"
 #include <mpc/minimax.h>
+#include "mpc_info.h"
 
 #include <tag.h>
+
+using namespace winamp_musepack;
 
 mpc_player::mpc_player(In_Module * in_mod)
 {
@@ -208,7 +212,7 @@ void mpc_player::stop(void)
 		killDecodeThread = 1;
 		if (wait_event) SetEvent(wait_event);
 		if (WaitForSingleObject(thread_handle,10000) == WAIT_TIMEOUT) {
-			MessageBox(mod->hMainWindow,"error asking thread to die!\n",
+			MessageBoxA(mod->hMainWindow,"error asking thread to die!\n",
 				"error killing decode thread", 0);
 			TerminateThread(thread_handle, 0);
 		}
@@ -264,4 +268,51 @@ int mpc_player::play(char *fn)
 	thread_handle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE) runThread, this, 0, 0);
 	
 	return 0; 
+}
+
+int mpc_player::infoDlg(HWND hwnd)
+{
+	mpc_info infoBox;
+	System::String ^ tmp;
+
+	tmp = "Streamversion ";
+	tmp += si.stream_version;
+	tmp += "\nEncoder : ";
+	tmp += gcnew String(si.encoder);
+	tmp += "\nProfile : ";
+	tmp += gcnew String(si.profile_name);
+	tmp += "\nPNS : ";
+	tmp += si.pns ? "on" : "off";
+	tmp += "\nGapless : ";
+	tmp += si.is_true_gapless ? "on" : "off";
+	tmp += "\nAverage bitrate : ";
+	tmp += floor(si.average_bitrate * 1.e-3 + .5);
+	tmp += " Kbps \nSamplerate : ";
+	tmp += si.sample_freq;
+	tmp += "\nChannels : ";
+	tmp += si.channels;
+	tmp += "\nFile size : ";
+	tmp += si.total_file_length;
+	tmp += " Bytes";
+	// FIXME : add replay gain info
+
+	infoBox.lblStreamInfo->Text = tmp;
+
+
+	if(tag_file == 0)
+		tag_file = new TagLib::FileRef(lastfn, false);
+
+	if (!tag_file->isNull() && tag_file->tag()) {
+		TagLib::Tag *tag = tag_file->tag();
+		infoBox.txtTitle->Text = gcnew String(tag->title().toCString(true));
+		infoBox.txtArtist->Text = gcnew String(tag->artist().toCString(true));
+		infoBox.txtAlbum->Text = gcnew String(tag->album().toCString(true));
+		infoBox.txtYear->Text += tag->year();
+		infoBox.txtTrack->Text += tag->track();
+		infoBox.comboGenre->Text = gcnew String(tag->genre().toCString(true));
+		infoBox.txtComment->Text = gcnew String(tag->comment().toCString(true));
+	}
+
+	infoBox.ShowDialog();
+	return 0;
 }
