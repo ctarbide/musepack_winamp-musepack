@@ -329,6 +329,9 @@ namespace winamp_musepack {
 			this->ClientSize = System::Drawing::Size(534, 237);
 			this->Controls->Add(this->groupBox2);
 			this->Controls->Add(this->groupBox1);
+			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
+			this->MaximizeBox = false;
+			this->MinimizeBox = false;
 			this->Name = L"mpc_info";
 			this->Text = L"Musepack file information";
 			this->groupBox1->ResumeLayout(false);

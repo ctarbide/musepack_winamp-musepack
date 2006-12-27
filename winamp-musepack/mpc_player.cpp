@@ -277,15 +277,15 @@ void mpc_player::loadTags(mpc_info ^ infoBox)
 
 	if (!tag_file->isNull() && tag_file->tag()) {
 		TagLib::Tag *tag = tag_file->tag();
-		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true));
-		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true));
-		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true));
+		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true), 0, strlen(tag->title().toCString(true)), System::Text::Encoding::UTF8);
+		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true), 0, strlen(tag->artist().toCString(true)), System::Text::Encoding::UTF8);
+		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true), 0, strlen(tag->album().toCString(true)), System::Text::Encoding::UTF8);
 		infoBox->txtYear->Text = "";
 		infoBox->txtYear->Text += tag->year();
 		infoBox->txtTrack->Text = "";
 		infoBox->txtTrack->Text += tag->track();
-		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true));
-		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true));
+		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true), 0, strlen(tag->genre().toCString(true)), System::Text::Encoding::UTF8);
+		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true), 0, strlen(tag->comment().toCString(true)), System::Text::Encoding::UTF8);
 	}
 }
 

@@ -36,6 +36,7 @@ System::Void mpc_info::btnReload_Click(System::Object^  sender, System::EventArg
 
 System::Void mpc_info::btnUpdate_Click(System::Object^  sender, System::EventArgs^  e)
 {
+	Hide();
 	player->writeTags(this);
 	Close();
 }
