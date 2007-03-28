@@ -20,13 +20,15 @@
 #include <windows.h>
 #include <math.h>
 
+#include <sstream>
+#include <iostream>
+
 #include "in2.h"
 #include "mpc_player.h"
+#include "resource.h"
 #include <mpc/minimax.h>
-#include "mpc_info.h"
 
-#include <tag.h>
-#include <vcclr.h>
+#include <taglib/tag.h>
 
 
 mpc_player::mpc_player(In_Module * in_mod)
@@ -270,87 +272,113 @@ int mpc_player::play(char *fn)
 	return 0; 
 }
 
-void mpc_player::loadTags(mpc_info ^ infoBox)
-{
-	if(tag_file == 0)
-		tag_file = new TagLib::FileRef(lastfn, false);
+//void mpc_player::loadTags(mpc_info ^ infoBox)
+//{
+//	if(tag_file == 0)
+//		tag_file = new TagLib::FileRef(lastfn, false);
+//
+//	if (!tag_file->isNull() && tag_file->tag()) {
+//		TagLib::Tag *tag = tag_file->tag();
+//		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true), 0, strlen(tag->title().toCString(true)), System::Text::Encoding::UTF8);
+//		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true), 0, strlen(tag->artist().toCString(true)), System::Text::Encoding::UTF8);
+//		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true), 0, strlen(tag->album().toCString(true)), System::Text::Encoding::UTF8);
+//		infoBox->txtYear->Text = "";
+//		infoBox->txtYear->Text += tag->year();
+//		infoBox->txtTrack->Text = "";
+//		infoBox->txtTrack->Text += tag->track();
+//		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true), 0, strlen(tag->genre().toCString(true)), System::Text::Encoding::UTF8);
+//		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true), 0, strlen(tag->comment().toCString(true)), System::Text::Encoding::UTF8);
+//	}
+//}
 
-	if (!tag_file->isNull() && tag_file->tag()) {
-		TagLib::Tag *tag = tag_file->tag();
-		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true), 0, strlen(tag->title().toCString(true)), System::Text::Encoding::UTF8);
-		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true), 0, strlen(tag->artist().toCString(true)), System::Text::Encoding::UTF8);
-		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true), 0, strlen(tag->album().toCString(true)), System::Text::Encoding::UTF8);
-		infoBox->txtYear->Text = "";
-		infoBox->txtYear->Text += tag->year();
-		infoBox->txtTrack->Text = "";
-		infoBox->txtTrack->Text += tag->track();
-		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true), 0, strlen(tag->genre().toCString(true)), System::Text::Encoding::UTF8);
-		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true), 0, strlen(tag->comment().toCString(true)), System::Text::Encoding::UTF8);
-	}
+//void mpc_player::writeTags(mpc_info ^ infoBox)
+//{
+//	if (!tag_file->isNull() && tag_file->tag()) {
+//		TagLib::Tag *tag = tag_file->tag();
+//
+//		pin_ptr<const wchar_t> wch = PtrToStringChars(infoBox->txtTitle->Text);
+//		tag->setTitle(wch);
+//
+//		wch = PtrToStringChars(infoBox->txtArtist->Text);
+//		tag->setArtist(wch);
+//
+//		wch = PtrToStringChars(infoBox->txtAlbum->Text);
+//		tag->setAlbum(wch);
+//
+//		wch = PtrToStringChars(infoBox->txtYear->Text);
+//		TagLib::String year(wch);
+//		tag->setYear(year.toInt());
+//
+//		wch = PtrToStringChars(infoBox->txtTrack->Text);
+//		TagLib::String track(wch);
+//		tag->setTrack(track.toInt());
+//
+//		wch = PtrToStringChars(infoBox->comboGenre->Text);
+//		tag->setGenre(wch);
+//
+//		wch = PtrToStringChars(infoBox->txtComment->Text);
+//		tag->setComment(wch);
+//
+//		tag_file->save(); // FIXME : make all crash
+//	}
+//}
+
+void mpc_player::initDlg(HWND hDlg)
+{
+	std::ostringstream tmp;
+
+	tmp << "Streamversion ";
+	tmp << si.stream_version;
+	tmp << "\nEncoder : ";
+	tmp << si.encoder;
+	tmp << "\nProfile : ";
+	tmp << si.profile_name;
+	tmp << "\nPNS : ";
+	if (si.pns) tmp << "on";
+	else tmp << "off";
+	tmp << "\nGapless : ";
+	if (si.is_true_gapless) tmp << "on";
+	else tmp << "off";
+	tmp << "\nAverage bitrate : ";
+	tmp << floor(si.average_bitrate * 1.e-3 + .5);
+	tmp << " Kbps \nSamplerate : ";
+	tmp << si.sample_freq;
+	tmp << "\nChannels : ";
+	tmp << si.channels;
+	tmp << "\nFile size : ";
+	tmp << si.total_file_length;
+	tmp << " Bytes";
+	//// FIXME : add replay gain info
+
+	SetDlgItemText(hDlg, IDC_STREAM_INFO, tmp.str().c_str());
 }
 
-void mpc_player::writeTags(mpc_info ^ infoBox)
+// Message handler for info box.
+LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (!tag_file->isNull() && tag_file->tag()) {
-		TagLib::Tag *tag = tag_file->tag();
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		((mpc_player *) lParam)->initDlg(hDlg);
+		return TRUE;
 
-		pin_ptr<const wchar_t> wch = PtrToStringChars(infoBox->txtTitle->Text);
-		tag->setTitle(wch);
-
-		wch = PtrToStringChars(infoBox->txtArtist->Text);
-		tag->setArtist(wch);
-
-		wch = PtrToStringChars(infoBox->txtAlbum->Text);
-		tag->setAlbum(wch);
-
-		wch = PtrToStringChars(infoBox->txtYear->Text);
-		TagLib::String year(wch);
-		tag->setYear(year.toInt());
-
-		wch = PtrToStringChars(infoBox->txtTrack->Text);
-		TagLib::String track(wch);
-		tag->setTrack(track.toInt());
-
-		wch = PtrToStringChars(infoBox->comboGenre->Text);
-		tag->setGenre(wch);
-
-		wch = PtrToStringChars(infoBox->txtComment->Text);
-		tag->setComment(wch);
-
-		tag_file->save(); // FIXME : make all crash
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) 
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		}
+		break;
 	}
+	return FALSE;
 }
 
 int mpc_player::infoDlg(HWND hwnd)
 {
-	mpc_info infoBox(this);
-	System::String ^ tmp;
+	DialogBoxParam(mod->hDllInstance, (LPCTSTR)IDD_INFO_BOX, hwnd, (DLGPROC)About, (LPARAM) this);
 
-	tmp = "Streamversion ";
-	tmp += si.stream_version;
-	tmp += "\nEncoder : ";
-	tmp += gcnew String(si.encoder);
-	tmp += "\nProfile : ";
-	tmp += gcnew String(si.profile_name);
-	tmp += "\nPNS : ";
-	tmp += si.pns ? "on" : "off";
-	tmp += "\nGapless : ";
-	tmp += si.is_true_gapless ? "on" : "off";
-	tmp += "\nAverage bitrate : ";
-	tmp += floor(si.average_bitrate * 1.e-3 + .5);
-	tmp += " Kbps \nSamplerate : ";
-	tmp += si.sample_freq;
-	tmp += "\nChannels : ";
-	tmp += si.channels;
-	tmp += "\nFile size : ";
-	tmp += si.total_file_length;
-	tmp += " Bytes";
-	// FIXME : add replay gain info
+	//loadTags(% infoBox);
 
-	infoBox.lblStreamInfo->Text = tmp;
-
-	loadTags(% infoBox);
-
-	infoBox.ShowDialog();
+	//infoBox.ShowDialog();
 	return 0;
 }
