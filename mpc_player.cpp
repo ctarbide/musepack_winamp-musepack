@@ -143,7 +143,7 @@ int mpc_player::decodeFile(void)
 				break;
 			}
 			WaitForSingleObject(wait_event, 100);		// give a little CPU time back to the system.
-		} else if (mod->outMod->CanWrite() >= (MPC_FRAME_LENGTH * sizeof(short) * si.channels)*(mod->dsp_isactive()?2:1)) {
+		} else if (mod->outMod->CanWrite() >= (int)((MPC_FRAME_LENGTH * sizeof(short) * si.channels)*(mod->dsp_isactive()?2:1))) {
 			// CanWrite() returns the number of bytes you can write, so we check that
 			// to the block size. the reason we multiply the block size by two if 
 			// mod->dsp_isactive() is that DSP plug-ins can change it by up to a 
@@ -254,7 +254,7 @@ int mpc_player::play(char *fn)
 
 	// dividing by 1000 for the first parameter of setinfo makes it
 	// display 'H'... for hundred.. i.e. 14H Kbps.
-	mod->SetInfo(si.average_bitrate / 1000, si.sample_freq / 1000, si.channels, 1);
+	mod->SetInfo((int)(si.average_bitrate / 1000), si.sample_freq / 1000, si.channels, 1);
 
 	// initialize visualization stuff
 	mod->SAVSAInit(maxlatency, si.sample_freq);
@@ -272,85 +272,66 @@ int mpc_player::play(char *fn)
 	return 0; 
 }
 
-//void mpc_player::loadTags(mpc_info ^ infoBox)
-//{
-//	if(tag_file == 0)
-//		tag_file = new TagLib::FileRef(lastfn, false);
-//
-//	if (!tag_file->isNull() && tag_file->tag()) {
-//		TagLib::Tag *tag = tag_file->tag();
-//		infoBox->txtTitle->Text = gcnew String(tag->title().toCString(true), 0, strlen(tag->title().toCString(true)), System::Text::Encoding::UTF8);
-//		infoBox->txtArtist->Text = gcnew String(tag->artist().toCString(true), 0, strlen(tag->artist().toCString(true)), System::Text::Encoding::UTF8);
-//		infoBox->txtAlbum->Text = gcnew String(tag->album().toCString(true), 0, strlen(tag->album().toCString(true)), System::Text::Encoding::UTF8);
-//		infoBox->txtYear->Text = "";
-//		infoBox->txtYear->Text += tag->year();
-//		infoBox->txtTrack->Text = "";
-//		infoBox->txtTrack->Text += tag->track();
-//		infoBox->comboGenre->Text = gcnew String(tag->genre().toCString(true), 0, strlen(tag->genre().toCString(true)), System::Text::Encoding::UTF8);
-//		infoBox->txtComment->Text = gcnew String(tag->comment().toCString(true), 0, strlen(tag->comment().toCString(true)), System::Text::Encoding::UTF8);
-//	}
-//}
+void mpc_player::writeTags(HWND hDlg)
+{
+	if (!tag_file->isNull() && tag_file->tag()) {
+		TagLib::Tag *tag = tag_file->tag();
 
-//void mpc_player::writeTags(mpc_info ^ infoBox)
-//{
-//	if (!tag_file->isNull() && tag_file->tag()) {
-//		TagLib::Tag *tag = tag_file->tag();
-//
-//		pin_ptr<const wchar_t> wch = PtrToStringChars(infoBox->txtTitle->Text);
-//		tag->setTitle(wch);
-//
-//		wch = PtrToStringChars(infoBox->txtArtist->Text);
-//		tag->setArtist(wch);
-//
-//		wch = PtrToStringChars(infoBox->txtAlbum->Text);
-//		tag->setAlbum(wch);
-//
-//		wch = PtrToStringChars(infoBox->txtYear->Text);
-//		TagLib::String year(wch);
-//		tag->setYear(year.toInt());
-//
-//		wch = PtrToStringChars(infoBox->txtTrack->Text);
-//		TagLib::String track(wch);
-//		tag->setTrack(track.toInt());
-//
-//		wch = PtrToStringChars(infoBox->comboGenre->Text);
-//		tag->setGenre(wch);
-//
-//		wch = PtrToStringChars(infoBox->txtComment->Text);
-//		tag->setComment(wch);
-//
-//		tag_file->save(); // FIXME : make all crash
-//	}
-//}
+		//tag->setTitle(wch);
+		//tag->setArtist(wch);
+		//tag->setAlbum(wch);
+
+		//TagLib::String year(wch);
+		//tag->setYear(year.toInt());
+
+		//TagLib::String track(wch);
+		//tag->setTrack(track.toInt());
+
+		//tag->setGenre(wch);
+		//tag->setComment(wch);
+
+		tag_file->save(); // FIXME : make all crash
+	}
+}
 
 void mpc_player::initDlg(HWND hDlg)
 {
 	std::ostringstream tmp;
 
-	tmp << "Streamversion ";
-	tmp << si.stream_version;
-	tmp << "\nEncoder : ";
-	tmp << si.encoder;
-	tmp << "\nProfile : ";
-	tmp << si.profile_name;
+	tmp << "Streamversion " << si.stream_version;
+	tmp << "\nEncoder : " << si.encoder;
+	tmp << "\nProfile : " << si.profile_name;
 	tmp << "\nPNS : ";
 	if (si.pns) tmp << "on";
 	else tmp << "off";
 	tmp << "\nGapless : ";
 	if (si.is_true_gapless) tmp << "on";
 	else tmp << "off";
-	tmp << "\nAverage bitrate : ";
-	tmp << floor(si.average_bitrate * 1.e-3 + .5);
-	tmp << " Kbps \nSamplerate : ";
-	tmp << si.sample_freq;
-	tmp << "\nChannels : ";
-	tmp << si.channels;
-	tmp << "\nFile size : ";
-	tmp << si.total_file_length;
-	tmp << " Bytes";
-	//// FIXME : add replay gain info
+	tmp << "\nAverage bitrate : " << floor(si.average_bitrate * 1.e-3 + .5) << " Kbps";
+	tmp << "\nSamplerate : " << si.sample_freq;
+	tmp << "\nChannels : " << si.channels;
+	tmp << "\nFile size : " << si.total_file_length << " Bytes";
+	//// FIXME : add replay gain info, lenth (min:sec), sample number
 
 	SetDlgItemText(hDlg, IDC_STREAM_INFO, tmp.str().c_str());
+
+	if(tag_file == 0)
+		tag_file = new TagLib::FileRef(lastfn, false);
+
+	if (!tag_file->isNull() && tag_file->tag()) {
+		TagLib::Tag *tag = tag_file->tag();
+		SetDlgItemText(hDlg, IDC_TITLE, tag->title().toCString(true));
+		SetDlgItemText(hDlg, IDC_ARTIST, tag->artist().toCString(true));
+		SetDlgItemText(hDlg, IDC_ALBUM, tag->album().toCString(true));
+		tmp.str("");
+		tmp << tag->year();
+		SetDlgItemText(hDlg, IDC_YEAR, tmp.str().c_str());
+		tmp.str("");
+		tmp << tag->track();
+		SetDlgItemText(hDlg, IDC_TRACK, tmp.str().c_str());
+		SetDlgItemText(hDlg, IDC_GENRE, tag->genre().toCString(true));
+		SetDlgItemText(hDlg, IDC_COMMENT, tag->comment().toCString(true));
+	}
 }
 
 // Message handler for info box.
@@ -359,12 +340,19 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_INITDIALOG:
+		SetWindowLong(hDlg, DWL_USER, lParam);
 		((mpc_player *) lParam)->initDlg(hDlg);
 		return TRUE;
 
 	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) 
-		{
+		if (LOWORD(wParam) == IDC_CANCEL || LOWORD(wParam) == IDCANCEL) {
+			EndDialog(hDlg, LOWORD(wParam));
+			return TRUE;
+		} else if (LOWORD(wParam) == IDC_RELOAD) {
+			// FIXME : this will not work on X64
+			((mpc_player*)GetWindowLong(hDlg, DWL_USER))->initDlg(hDlg);
+		} else if (LOWORD(wParam) == IDC_SAVE) {
+			((mpc_player*)GetWindowLong(hDlg, DWL_USER))->writeTags(hDlg);
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
 		}

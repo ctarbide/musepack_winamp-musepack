@@ -37,13 +37,14 @@ public:
 	void stop(void);
 
 	void getFileInfo(char *title, int *length_in_ms);
-	int getLength(void) {return si.samples * 1000 / si.sample_freq;}
-	int getOutputTime(void) {return decode_pos_sample * 1000 / si.sample_freq;}
+	int getLength(void) {return (int)(si.samples * 1000 / si.sample_freq);}
+	int getOutputTime(void) {return (int)(decode_pos_sample * 1000 / si.sample_freq);}
 
 	void setOutputTime(int time_in_ms);
 
 	int infoDlg(HWND hwnd);
 	void initDlg(HWND hDlg);
+	void writeTags(HWND hDlg);
 
 	int paused;				// are we paused?
 
