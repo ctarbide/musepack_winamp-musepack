@@ -311,7 +311,12 @@ void mpc_player::initDlg(HWND hDlg)
 	tmp << "\nSamplerate : " << si.sample_freq;
 	tmp << "\nChannels : " << si.channels;
 	tmp << "\nFile size : " << si.total_file_length << " Bytes";
-	//// FIXME : add replay gain info, lenth (min:sec), sample number
+	tmp << "\nDuration : " << si.samples / (60 * si.sample_freq) << ":" << (si.samples / si.sample_freq) % 60;
+	tmp << "\nSamples : " << si.samples;
+	tmp << "\nTrack Peak : " << si.peak_title / 256. << " dB";
+	tmp << "\nTrack Gain : " << si.gain_title / 256. << " dB";
+	tmp << "\nAlbum Peak : " << si.peak_album / 256. << " dB";
+	tmp << "\nAlbum Gain : " << si.gain_album / 256. << " dB";
 
 	SetDlgItemText(hDlg, IDC_STREAM_INFO, tmp.str().c_str());
 
