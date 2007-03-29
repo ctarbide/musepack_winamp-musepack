@@ -56,13 +56,12 @@ END
 // Dialog
 //
 
-IDD_INFO_BOX DIALOGEX 0, 0, 406, 202
+IDD_INFO_BOX DIALOGEX 0, 0, 403, 202
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Musepack file information"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Stream",IDC_STATIC,264,18,138,180,BS_FLAT
-    LTEXT           "",IDC_STREAM_INFO,270,29,126,163
+    GROUPBOX        "Stream",IDC_STATIC,264,18,136,132,BS_FLAT
     GROUPBOX        "Tag",IDC_STATIC,6,18,252,180,BS_FLAT
     EDITTEXT        IDC_TITLE,54,30,198,12,ES_AUTOHSCROLL
     RTEXT           "Title",IDC_STATIC,12,32,36,8
@@ -82,8 +81,10 @@ BEGIN
     PUSHBUTTON      "Cancel",IDC_CANCEL,186,180,66,12
     PUSHBUTTON      "Reload",IDC_RELOAD,99,180,66,12
     PUSHBUTTON      "Save",IDC_SAVE,12,180,66,12
-    EDITTEXT        IDC_FILE,24,6,378,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_FILE,24,6,376,12,ES_AUTOHSCROLL | ES_READONLY
     RTEXT           "File",IDC_STATIC,6,8,12,8
+    CONTROL         106,IDC_STATIC,"Static",SS_BITMAP,264,152,136,46
+    LTEXT           "",IDC_STREAM_INFO,268,25,129,124
 END
 
 
@@ -98,7 +99,7 @@ BEGIN
     IDD_INFO_BOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 399
+        RIGHTMARGIN, 396
         TOPMARGIN, 7
         BOTTOMMARGIN, 195
     END
@@ -106,6 +107,25 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// French (France) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRA)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LOGO                BITMAP                  "mpc_logo.bmp"
+#endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

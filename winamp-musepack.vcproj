@@ -71,6 +71,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="1"
+				FavorSizeOrSpeed="2"
+				OmitFramePointers="FALSE"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\taglib\include\taglib&quot;;&quot;$(SolutionDir)\..\libmpc\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINAMPMUSEPACK_EXPORTS"
 				RuntimeLibrary="2"
@@ -152,6 +155,9 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath=".\mpc_logo.bmp">
+			</File>
 			<File
 				RelativePath=".\winamp-musepack.rc">
 			</File>
