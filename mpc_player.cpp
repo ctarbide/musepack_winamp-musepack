@@ -29,6 +29,7 @@
 #include <mpc/minimax.h>
 
 #include <taglib/tag.h>
+#include <taglib/tfile.h>
 
 
 mpc_player::mpc_player(In_Module * in_mod)
@@ -187,8 +188,10 @@ void mpc_player::getFileInfo(char *title, int *length_in_ms)
 {
 	if (length_in_ms) *length_in_ms = getLength();
 	if (title) {
-		if(tag_file == 0)
+		if(tag_file == 0) {
 			tag_file = new TagLib::FileRef(lastfn, false);
+			(tag_file->file())->useWinAnsiCP(true);
+		}
 
 		if (tag_file->isNull() || !tag_file->tag()) {
 			char *p = lastfn + strlen(lastfn);
@@ -314,28 +317,37 @@ void mpc_player::initDlg(HWND hDlg)
 	tmp << "\nDuration : " << si.samples / (60 * si.sample_freq) << ":" << (si.samples / si.sample_freq) % 60;
 	tmp << "\nSamples : " << si.samples;
 	tmp << "\nTrack Peak : " << si.peak_title / 256. << " dB";
-	tmp << "\nTrack Gain : " << si.gain_title / 256. << " dB";
+	tmp << "\nTrack Level : " << si.gain_title / 256. << " dB";
 	tmp << "\nAlbum Peak : " << si.peak_album / 256. << " dB";
-	tmp << "\nAlbum Gain : " << si.gain_album / 256. << " dB";
+	tmp << "\nAlbum Level : " << si.gain_album / 256. << " dB";
 
 	SetDlgItemText(hDlg, IDC_STREAM_INFO, tmp.str().c_str());
 
-	if(tag_file == 0)
+	if(tag_file == 0) {
 		tag_file = new TagLib::FileRef(lastfn, false);
+		(tag_file->file())->useWinAnsiCP(true);
+	}
 
 	if (!tag_file->isNull() && tag_file->tag()) {
 		TagLib::Tag *tag = tag_file->tag();
-		SetDlgItemText(hDlg, IDC_TITLE, tag->title().toCString(true));
-		SetDlgItemText(hDlg, IDC_ARTIST, tag->artist().toCString(true));
-		SetDlgItemText(hDlg, IDC_ALBUM, tag->album().toCString(true));
+		WCHAR buf[2048];
+
+		MultiByteToWideChar(CP_UTF8, 0, tag->title().toCString(true), -1, buf, 2048);
+		SetDlgItemTextW(hDlg, IDC_TITLE, buf);
+		MultiByteToWideChar(CP_UTF8, 0, tag->artist().toCString(true), -1, buf, 2048);
+		SetDlgItemTextW(hDlg, IDC_ARTIST, buf);
+		MultiByteToWideChar(CP_UTF8, 0, tag->album().toCString(true), -1, buf, 2048);
+		SetDlgItemTextW(hDlg, IDC_ALBUM, buf);
 		tmp.str("");
 		tmp << tag->year();
 		SetDlgItemText(hDlg, IDC_YEAR, tmp.str().c_str());
 		tmp.str("");
 		tmp << tag->track();
 		SetDlgItemText(hDlg, IDC_TRACK, tmp.str().c_str());
-		SetDlgItemText(hDlg, IDC_GENRE, tag->genre().toCString(true));
-		SetDlgItemText(hDlg, IDC_COMMENT, tag->comment().toCString(true));
+		MultiByteToWideChar(CP_UTF8, 0, tag->genre().toCString(true), -1, buf, 2048);
+		SetDlgItemTextW(hDlg, IDC_GENRE, buf);
+		MultiByteToWideChar(CP_UTF8, 0, tag->comment().toCString(true), -1, buf, 2048);
+		SetDlgItemTextW(hDlg, IDC_COMMENT, buf);
 	}
 }
 
