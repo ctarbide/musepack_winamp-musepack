@@ -20,11 +20,12 @@
 #pragma once
 
 #include <mpc/mpcdec.h>
-#include <taglib/fileref.h>
+#include <fileref.h>
 
 // post this to the main window at end of file (after playback as stopped)
 #define WM_WA_EOF WM_USER+2
 
+#define NO_GENRES 149
 
 class mpc_player
 {
@@ -50,6 +51,7 @@ public:
 
 private:
 	char lastfn[MAX_PATH];	// currently playing file (used for getting info on the current file)
+	static const char* GenreList[NO_GENRES];
 	mpc_streaminfo si;
 	mpc_reader reader;
 	mpc_demux* demux;

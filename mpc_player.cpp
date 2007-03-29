@@ -28,9 +28,37 @@
 #include "resource.h"
 #include <mpc/minimax.h>
 
-#include <taglib/tag.h>
-#include <taglib/tfile.h>
+#include <tag.h>
+#include <tfile.h>
 
+const char* mpc_player::GenreList [NO_GENRES] = {
+    "", "Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk",
+    "Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies",
+    "Other", "Pop", "R&B", "Rap", "Reggae", "Rock",
+    "Techno", "Industrial", "Alternative", "Ska", "Death Metal", "Pranks",
+    "Soundtrack", "Euro-Techno", "Ambient", "Trip-Hop", "Vocal", "Jazz+Funk",
+    "Fusion", "Trance", "Classical", "Instrumental", "Acid", "House",
+    "Game", "Sound Clip", "Gospel", "Noise", "AlternRock", "Bass",
+    "Soul", "Punk", "Space", "Meditative", "Instrumental Pop", "Instrumental Rock",
+    "Ethnic", "Gothic", "Darkwave", "Techno-Industrial", "Electronic", "Pop-Folk",
+    "Eurodance", "Dream", "Southern Rock", "Comedy", "Cult", "Gangsta",
+    "Top 40", "Christian Rap", "Pop/Funk", "Jungle", "Native American", "Cabaret",
+    "New Wave", "Psychadelic", "Rave", "Showtunes", "Trailer", "Lo-Fi",
+    "Tribal", "Acid Punk", "Acid Jazz", "Polka", "Retro", "Musical",
+    "Rock & Roll", "Hard Rock", "Folk", "Folk/Rock", "National Folk", "Swing",
+    "Fast-Fusion", "Bebob", "Latin", "Revival", "Celtic", "Bluegrass", "Avantgarde",
+    "Gothic Rock", "Progressive Rock", "Psychedelic Rock", "Symphonic Rock", "Slow Rock", "Big Band",
+    "Chorus", "Easy Listening", "Acoustic", "Humour", "Speech", "Chanson",
+    "Opera", "Chamber Music", "Sonata", "Symphony", "Booty Bass", "Primus",
+    "Po""rn Groove", "Satire", "Slow Jam", "Club", "Tango", "Samba",
+    "Folklore", "Ballad", "Power Ballad", "Rhythmic Soul", "Freestyle", "Duet",
+    "Punk Rock", "Drum Solo", "A capella", "Euro-House", "Dance Hall",
+    "Goa", "Drum & Bass", "Club House", "Ha""rd""co""re", "Terror",
+    "Indie", "BritPop", "NegerPunk", "Polsk Punk", "Beat",
+    "Christian Gangsta", "Heavy Metal", "Black Metal", "Crossover", "Contemporary C",
+    "Christian Rock", "Merengue", "Salsa", "Thrash Metal", "Anime", "JPop",
+    "SynthPop",
+};
 
 mpc_player::mpc_player(In_Module * in_mod)
 {
@@ -57,6 +85,9 @@ void mpc_player::init(In_Module * in_mod)
 	mod = in_mod;
 	wait_event = 0;
 	tag_file = 0;
+	
+	TagLib::FileRef fileRef;
+	fileRef.file()->useWinAnsiCP(true);
 }
 
 int mpc_player::openFile(char * fn)
@@ -188,10 +219,8 @@ void mpc_player::getFileInfo(char *title, int *length_in_ms)
 {
 	if (length_in_ms) *length_in_ms = getLength();
 	if (title) {
-		if(tag_file == 0) {
+		if (tag_file == 0)
 			tag_file = new TagLib::FileRef(lastfn, false);
-			(tag_file->file())->useWinAnsiCP(true);
-		}
 
 		if (tag_file->isNull() || !tag_file->tag()) {
 			char *p = lastfn + strlen(lastfn);
@@ -200,12 +229,6 @@ void mpc_player::getFileInfo(char *title, int *length_in_ms)
 		} else {
 			TagLib::Tag *tag = tag_file->tag();
 			sprintf(title, "%s - %s", tag->artist().toCString(), tag->title().toCString());
-			//tag->artist()
-			//tag->album()
-			//tag->year()
-			//tag->comment()
-			//tag->track()
-			//tag->genre()
 		}
 	}
 }
@@ -280,20 +303,26 @@ void mpc_player::writeTags(HWND hDlg)
 	if (!tag_file->isNull() && tag_file->tag()) {
 		TagLib::Tag *tag = tag_file->tag();
 
-		//tag->setTitle(wch);
-		//tag->setArtist(wch);
-		//tag->setAlbum(wch);
+		WCHAR buf[2048];
 
-		//TagLib::String year(wch);
-		//tag->setYear(year.toInt());
+		GetDlgItemTextW(hDlg, IDC_TITLE, buf, 2048);
+		tag->setTitle(buf);
+		GetDlgItemTextW(hDlg, IDC_ARTIST, buf, 2048);
+		tag->setArtist(buf);
+		GetDlgItemTextW(hDlg, IDC_ALBUM, buf, 2048);
+		tag->setAlbum(buf);
+		GetDlgItemTextW(hDlg, IDC_YEAR, buf, 2048);
+		TagLib::String year(buf);
+		tag->setYear(year.toInt());
+		GetDlgItemTextW(hDlg, IDC_TRACK, buf, 2048);
+		TagLib::String track(buf);
+		tag->setTrack(track.toInt());
+		GetDlgItemTextW(hDlg, IDC_GENRE, buf, 2048);
+		tag->setGenre(buf);
+		GetDlgItemTextW(hDlg, IDC_COMMENT, buf, 2048);
+		tag->setComment(buf);
 
-		//TagLib::String track(wch);
-		//tag->setTrack(track.toInt());
-
-		//tag->setGenre(wch);
-		//tag->setComment(wch);
-
-		tag_file->save(); // FIXME : make all crash
+		tag_file->save();
 	}
 }
 
@@ -323,10 +352,10 @@ void mpc_player::initDlg(HWND hDlg)
 
 	SetDlgItemText(hDlg, IDC_STREAM_INFO, tmp.str().c_str());
 
-	if(tag_file == 0) {
+	SetDlgItemText(hDlg, IDC_FILE, lastfn);
+
+	if (tag_file == 0)
 		tag_file = new TagLib::FileRef(lastfn, false);
-		(tag_file->file())->useWinAnsiCP(true);
-	}
 
 	if (!tag_file->isNull() && tag_file->tag()) {
 		TagLib::Tag *tag = tag_file->tag();
@@ -349,6 +378,10 @@ void mpc_player::initDlg(HWND hDlg)
 		MultiByteToWideChar(CP_UTF8, 0, tag->comment().toCString(true), -1, buf, 2048);
 		SetDlgItemTextW(hDlg, IDC_COMMENT, buf);
 	}
+
+	HWND hGenre = GetDlgItem ( hDlg, IDC_GENRE );
+	for ( int n = 0; n < NO_GENRES; n++ )
+        SendMessage ( hGenre, CB_ADDSTRING, 0, (LONG)(LPSTR)GenreList[n] );
 }
 
 // Message handler for info box.
@@ -357,7 +390,7 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		SetWindowLong(hDlg, DWL_USER, lParam);
+		SetWindowLongPtr(hDlg, DWLP_USER, lParam);
 		((mpc_player *) lParam)->initDlg(hDlg);
 		return TRUE;
 
@@ -366,10 +399,9 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
 		} else if (LOWORD(wParam) == IDC_RELOAD) {
-			// FIXME : this will not work on X64
-			((mpc_player*)GetWindowLong(hDlg, DWL_USER))->initDlg(hDlg);
+			((mpc_player*)GetWindowLongPtr(hDlg, DWLP_USER))->initDlg(hDlg);
 		} else if (LOWORD(wParam) == IDC_SAVE) {
-			((mpc_player*)GetWindowLong(hDlg, DWL_USER))->writeTags(hDlg);
+			((mpc_player*)GetWindowLongPtr(hDlg, DWLP_USER))->writeTags(hDlg);
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
 		}
@@ -381,9 +413,5 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 int mpc_player::infoDlg(HWND hwnd)
 {
 	DialogBoxParam(mod->hDllInstance, (LPCTSTR)IDD_INFO_BOX, hwnd, (DLGPROC)About, (LPARAM) this);
-
-	//loadTags(% infoBox);
-
-	//infoBox.ShowDialog();
 	return 0;
 }

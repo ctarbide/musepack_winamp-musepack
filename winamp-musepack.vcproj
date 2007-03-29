@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\taglib\include&quot;;&quot;$(SolutionDir)\..\libmpc\include&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\taglib\include\taglib&quot;;&quot;$(SolutionDir)\..\libmpc\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;WINAMPMUSEPACK_EXPORTS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -71,7 +71,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\taglib\include&quot;;&quot;$(SolutionDir)\..\libmpc\include&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\taglib\include\taglib&quot;;&quot;$(SolutionDir)\..\libmpc\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WINAMPMUSEPACK_EXPORTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
