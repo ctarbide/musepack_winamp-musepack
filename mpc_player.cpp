@@ -85,6 +85,7 @@ void mpc_player::init(In_Module * in_mod)
 	mod = in_mod;
 	wait_event = 0;
 	tag_file = 0;
+	lastfn[0] = 0;
 	
 	TagLib::FileRef fileRef;
 	fileRef.file()->useWinAnsiCP(true);
@@ -119,6 +120,7 @@ void mpc_player::closeFile(void)
 		delete tag_file;
 		tag_file = 0;
 	}
+	lastfn[0] = 0;
 }
 
 void mpc_player::setOutputTime(int time_in_ms)
@@ -328,6 +330,11 @@ void mpc_player::writeTags(HWND hDlg)
 
 void mpc_player::initDlg(HWND hDlg)
 {
+	if (lastfn[0] == 0) {
+		SetDlgItemText(hDlg, IDC_FILE, "Can't open file");
+		return;
+	}
+
 	std::ostringstream tmp;
 
 	tmp << "Streamversion " << si.stream_version;
@@ -404,6 +411,8 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			((mpc_player*)GetWindowLongPtr(hDlg, DWLP_USER))->writeTags(hDlg);
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
+		} else if (LOWORD(wParam) == IDC_LOGO) {
+			ShellExecute( hDlg, "open", "http://www.musepack.com", NULL, NULL, SW_NORMAL);
 		}
 		break;
 	}
