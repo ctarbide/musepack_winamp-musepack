@@ -412,7 +412,7 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
 		} else if (LOWORD(wParam) == IDC_LOGO) {
-			ShellExecute( hDlg, "open", "http://www.musepack.com", NULL, NULL, SW_NORMAL);
+			ShellExecute( hDlg, "open", "http://www.musepack.net", NULL, NULL, SW_NORMAL);
 		}
 		break;
 	}
