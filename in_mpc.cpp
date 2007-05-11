@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2006 Nicolas BOTTI <rududu at laposte.net>
+	Copyright (C) 2006-2007 Nicolas BOTTI <rududu at laposte.net>
 	This file is part of the Musepack Winamp plugin.
 
 	This library is free software; you can redistribute it and/or
@@ -47,6 +47,7 @@ void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
 mpc_player * player;
+mpc_player * player_ext;
 
 // module definition.
 In_Module mod = 
@@ -92,11 +93,12 @@ In_Module mod =
 
 void config(HWND hwndParent)
 {
-	MessageBoxA(hwndParent, "No configuration yet", "Configuration", MB_OK);
+	MessageBoxA(hwndParent, "Do you really need a configuration ?", "Musepack Configuration", MB_OK);
 }
 void about(HWND hwndParent)
 {
-	MessageBoxA(hwndParent,"Musepack plugin for winamp\nAll bugs © Nicolas BOTTI", "Uh ?", MB_OK);
+	if (MessageBoxA(hwndParent,"Musepack plugin for winamp\nAll bugs © Nicolas BOTTI\n\nDo you want to go to http://www.musepack.net ?", "Uh ?", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+		ShellExecute( hwndParent, "open", "http://www.musepack.net", NULL, NULL, SW_NORMAL);
 }
 
 void init(void)
@@ -222,6 +224,20 @@ extern "C" {
 __declspec( dllexport ) In_Module * winampGetInModule2()
 {
 	return &mod;
+}
+
+__declspec( dllexport ) int winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, int destlen )
+{
+	if ( !fn || (fn && !fn[0]) ) return 0;
+
+	if (player_ext == 0)
+		player_ext = new mpc_player(fn, 0);
+	else
+		player_ext->openFile(fn);
+
+	dest[0] = 0;
+
+	return player_ext->getExtendedFileInfo(data, dest, destlen);
 }
 
 }

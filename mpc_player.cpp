@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2006 Nicolas BOTTI <rududu at laposte.net>
+	Copyright (C) 2006-2007 Nicolas BOTTI <rududu at laposte.net>
 	This file is part of the Musepack Winamp plugin.
 
 	This library is free software; you can redistribute it and/or
@@ -19,6 +19,7 @@
 
 #include <windows.h>
 #include <math.h>
+#include <strsafe.h>
 
 #include <sstream>
 #include <iostream>
@@ -65,7 +66,7 @@ mpc_player::mpc_player(In_Module * in_mod)
 	init(in_mod);
 }
 
-mpc_player::mpc_player(char * fn, In_Module * in_mod)
+mpc_player::mpc_player(const char * fn, In_Module * in_mod)
 {
 	init(in_mod);
 	openFile(fn);
@@ -91,8 +92,11 @@ void mpc_player::init(In_Module * in_mod)
 	fileRef.file()->useWinAnsiCP(true);
 }
 
-int mpc_player::openFile(char * fn)
+int mpc_player::openFile(const char * fn)
 {
+	if (strcmp(fn, lastfn) == 0)
+		return 0;
+
 	closeFile();
 
     mpc_status err = mpc_reader_init_stdio(&reader, fn);
@@ -423,4 +427,56 @@ int mpc_player::infoDlg(HWND hwnd)
 {
 	DialogBoxParam(mod->hDllInstance, (LPCTSTR)IDD_INFO_BOX, hwnd, (DLGPROC)About, (LPARAM) this);
 	return 0;
+}
+
+int mpc_player::getExtendedFileInfo(const char *data, char *dest, int destlen )
+{
+	if (!stricmp(data, "length")) {
+		StringCchPrintfA(dest, destlen, "%u", getLength());
+	} else if (!stricmp(data, "bitrate")) {
+		StringCchPrintfA(dest, destlen, "%u", (unsigned int)(si.average_bitrate/1000.));
+	} else if (!stricmp(data, "replaygain_album_gain"))	{
+		if (si.gain_album)
+			StringCchPrintfA(dest, destlen, "%-+.2f dB", 64.82f - si.gain_album / 256.f);
+	} else if (!stricmp(data, "replaygain_album_peak"))	{
+		if (si.peak_album)
+			StringCchPrintfA(dest, destlen, "%-.9f", (float)((1 << 15) / pow(10, si.peak_album / (20 * 256))));
+	} else if (!stricmp(data, "replaygain_track_gain"))	{
+		if (si.gain_title)
+			StringCchPrintfA(dest, destlen, "%-+.2f dB", 64.82f - si.gain_title / 256.f);
+	} else if (!stricmp(data, "replaygain_track_peak"))	{		
+		if (si.peak_title)
+			StringCchPrintfA(dest, destlen, "%-.9f", (float)((1 << 15) / pow(10, si.peak_title / (20 * 256))));
+	} else {
+
+		if (tag_file == 0)
+			tag_file = new TagLib::FileRef(lastfn, false);
+
+		if (!tag_file->isNull() && tag_file->tag()) {
+			TagLib::Tag *tag = tag_file->tag();
+			WCHAR buf[2048];
+
+			if (!stricmp(data, "title"))
+				MultiByteToWideChar(CP_UTF8, 0, tag->title().toCString(true), -1, buf, 2048);
+			else if (!stricmp(data, "artist"))
+				MultiByteToWideChar(CP_UTF8, 0, tag->artist().toCString(true), -1, buf, 2048);
+			else if (!stricmp(data, "album"))
+				MultiByteToWideChar(CP_UTF8, 0, tag->album().toCString(true), -1, buf, 2048);
+			else if (!stricmp(data, "comment"))
+				MultiByteToWideChar(CP_UTF8, 0, tag->comment().toCString(true), -1, buf, 2048);
+			else if (!stricmp(data, "genre"))
+				MultiByteToWideChar(CP_UTF8, 0, tag->genre().toCString(true), -1, buf, 2048);
+			else if (!stricmp(data, "trackno")) {
+				StringCchPrintfA(dest, destlen, "%u", tag->track());
+				return 1;
+			} else if (!stricmp(data, "year")) {
+				StringCchPrintfA(dest, destlen, "%u", tag->year());
+				return 1;
+			}
+
+			WideCharToMultiByte(CP_ACP, 0, buf, -1, dest, destlen, NULL, NULL);
+		} else
+			return 0;
+	}
+	return 1;
 }

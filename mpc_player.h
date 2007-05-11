@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2006 Nicolas BOTTI <rududu at laposte.net>
+	Copyright (C) 2006-2007 Nicolas BOTTI <rududu at laposte.net>
 	This file is part of the Musepack Winamp plugin.
 
 	This library is free software; you can redistribute it and/or
@@ -31,14 +31,16 @@ class mpc_player
 {
 public:
 	mpc_player(In_Module * in_mod);
-	mpc_player(char * fn, In_Module * in_mod);
+	mpc_player(const char * fn, In_Module * in_mod);
 	~mpc_player(void);
 
+	int openFile(const char * fn);
 	int play(char *fn);
 	void stop(void);
 
 	void getFileInfo(char *title, int *length_in_ms);
-	int getLength(void) {return (int)(si.samples * 1000 / si.sample_freq);}
+	int getExtendedFileInfo(const char *data, char *dest, int destlen);
+	int getLength(void) {return (int)(mpc_streaminfo_get_length(&si) * 1000);}
 	int getOutputTime(void) {return (int)(decode_pos_sample * 1000 / si.sample_freq);}
 
 	void setOutputTime(int time_in_ms);
@@ -71,7 +73,6 @@ private:
 
 	static DWORD WINAPI runThread(void * pThis);
 	int decodeFile(void);
-	int openFile(char * fn);
 	void closeFile(void);
 
 	void init(In_Module * in_mod);
