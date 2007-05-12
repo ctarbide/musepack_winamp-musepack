@@ -47,7 +47,6 @@ void setpan(int pan);
 void eq_set(int on, char data[10], int preamp);
 
 mpc_player * player;
-mpc_player * player_ext;
 
 // module definition.
 In_Module mod = 
@@ -229,15 +228,10 @@ __declspec( dllexport ) In_Module * winampGetInModule2()
 __declspec( dllexport ) int winampGetExtendedFileInfo(const char *fn, const char *data, char *dest, int destlen )
 {
 	if ( !fn || (fn && !fn[0]) ) return 0;
-
-	if (player_ext == 0)
-		player_ext = new mpc_player(fn, 0);
-	else
-		player_ext->openFile(fn);
-
 	dest[0] = 0;
 
-	return player_ext->getExtendedFileInfo(data, dest, destlen);
+	mpc_player info_play(fn, 0);
+	return info_play.getExtendedFileInfo(data, dest, destlen);
 }
 
 }
